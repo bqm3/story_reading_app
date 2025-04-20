@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <EditText
+        android:id="@+id/edtNewChapterTitle"
+        android:hint="Tiêu đề chương"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <EditText
+        android:id="@+id/edtNewChapterNumber"
+        android:hint="Số chương"
+        android:inputType="number"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <EditText
+        android:id="@+id/edtNewChapterDate"
+        android:hint="Ngày phát hành (yyyy-MM-dd)"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+</LinearLayout>
