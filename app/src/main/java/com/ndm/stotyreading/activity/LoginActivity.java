@@ -33,13 +33,19 @@ public class LoginActivity extends AppCompatActivity {
     private Button btnSignIn;
     private ProgressDialog progressDialog;
     private TextView tv_forgot_pw;
-
+    private TextView tvSignUp;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         initUI();
         initListener();
+
+        tvSignUp = findViewById(R.id.txtSignUp); // ID của TextView “Đăng ký”
+        tvSignUp.setOnClickListener(v -> {
+            Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
+            startActivity(intent);
+        });
     }
 
     private void initUI() {

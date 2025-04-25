@@ -12,13 +12,6 @@
             android:id="@+id/nav_add_story"
             android:title="Thêm truyện" />
 
-        <item
-            android:id="@+id/nav_manage_users"
-            android:title="Quản lý người dùng" />
-
-        <item
-            android:id="@+id/nav_settings"
-            android:title="Cài đặt" />
 
         <item
             android:id="@+id/nav_logout"

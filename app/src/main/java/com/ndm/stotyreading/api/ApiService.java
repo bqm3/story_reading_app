@@ -8,24 +8,20 @@ import com.ndm.stotyreading.enitities.story.ChapterDetailResponse;
 import com.ndm.stotyreading.enitities.story.ChapterImage;
 import com.ndm.stotyreading.enitities.story.CommentRequest;
 import com.ndm.stotyreading.enitities.story.CommentResponse;
+import com.ndm.stotyreading.enitities.user.RegisterRequest;
 import com.ndm.stotyreading.enitities.story.Story;
-import com.ndm.stotyreading.enitities.story.StoryBasic;
 import com.ndm.stotyreading.enitities.story.StoryChapterRespone;
 import com.ndm.stotyreading.enitities.story.StoryResponse;
-import com.ndm.stotyreading.enitities.story.StoryWithChaptersResponse;
 import com.ndm.stotyreading.enitities.user.LoginRequest;
 import com.ndm.stotyreading.enitities.user.LoginResponse;
 
 import java.util.List;
-import java.util.Map;
 
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
-import retrofit2.http.Field;
-import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.Multipart;
@@ -44,6 +40,9 @@ public interface ApiService {
 
     @POST("auth/login")
     Call<LoginResponse> login(@Body LoginRequest loginRequest);
+
+    @POST("auth/register")
+    Call<LoginResponse> register(@Body RegisterRequest body);
 
     @GET("common/stories")
     Call<StoryResponse> getStories(
@@ -107,6 +106,8 @@ public interface ApiService {
             @Part("status") RequestBody status,
             @Part MultipartBody.Part coverImage // có thể null nếu không chọn ảnh mới
     );
+
+
 
     @Multipart
     @PUT("chapters/{id}")
