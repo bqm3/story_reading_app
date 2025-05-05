@@ -55,7 +55,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private RecyclerView rcvListItem;
     private EditText edtSearch;
     private Button btnSearch;
-    private ImageView imgSearch;
     private FrameLayout frameGioHang;
 
     private StoryAdapter storyAdapter;
@@ -85,7 +84,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         navigationView = findViewById(R.id.navigation_view);
         mDrawerLayout = findViewById(R.id.main);
         rcvListItem = findViewById(R.id.rcv_list_item);
-        imgSearch = findViewById(R.id.imgsearch);
         frameGioHang = findViewById(R.id.framegiohang);
 
         rcvListItem.setLayoutManager(new LinearLayoutManager(this));
@@ -122,7 +120,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void setupListeners() {
-        imgSearch.setOnClickListener(v -> performSearch());
         btnSearch.setOnClickListener(v -> performSearch());
         frameGioHang.setOnClickListener(v -> {
             Toast.makeText(this, "Chức năng giỏ hàng chưa được triển khai", Toast.LENGTH_SHORT).show();
