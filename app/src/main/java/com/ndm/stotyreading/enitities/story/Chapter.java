@@ -17,7 +17,15 @@ public class Chapter implements Parcelable {
     private String created_at;
     private boolean is_viewed; // 🔥 Thêm biến kiểm tra đã đọc chưa
     private List<ChapterImage> chapterImages;
+    private String viewed_at;
 
+    public String getViewedAt() {
+        return viewed_at;
+    }
+
+    public void setViewedAt(String viewedAt) {
+        this.viewed_at = viewedAt;
+    }
     public void setTitle(String title) {
         this.title = title;
     }

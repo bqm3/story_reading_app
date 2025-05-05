@@ -14,13 +14,21 @@ public class Story implements Serializable {
     private String status;
     private int views;
     private double rating;
+    private boolean isLiked;
     private String created_at;
     private String updated_at;
+
     private Category category;
     private List<Chapter> chapters;
     private List<Tag> tags;
 
+    public boolean isLiked() {
+        return isLiked;
+    }
 
+    public void setLiked(boolean liked) {
+        isLiked = liked;
+    }
     public String getId() {
         return Objects.toString(id, "");
     }

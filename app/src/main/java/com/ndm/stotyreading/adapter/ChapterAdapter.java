@@ -1,5 +1,7 @@
 package com.ndm.stotyreading.adapter;
 
+import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,12 +15,23 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.ndm.stotyreading.R;
 import com.ndm.stotyreading.enitities.story.Chapter;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterViewHolder> {
 
     private List<Chapter> chapterList;
     private OnChapterClickListener onChapterClickListener;
+    private String lastViewedChapterId;
+
+    public void setLastViewedChapterId(String id) {
+        this.lastViewedChapterId = id;
+        notifyDataSetChanged();
+    }
+
 
     // Define the listener interface
     public interface OnChapterClickListener {
@@ -45,15 +58,23 @@ public class ChapterAdapter extends RecyclerView.Adapter<ChapterAdapter.ChapterV
         holder.tvChapterNumber.setText("Chương " + chapter.getChapterNumber());
         holder.tvChapterTitle.setText(chapter.getTitle());
         holder.tvReleaseDate.setText(chapter.getReleaseDate());
+        Log.d("ChapterID", "chapterId: " + chapter.getId() + ", lastViewedId: " + lastViewedChapterId);
+
+        Context context = holder.itemView.getContext();
+
         if (chapter.isViewed()) {
-            holder.cardChapter.setCardBackgroundColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.light_green));
+            if (chapter.getId().equals(lastViewedChapterId)) {
+                holder.cardChapter.setCardBackgroundColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.yellow));
+            } else {
+                holder.cardChapter.setCardBackgroundColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.light_green));
+            }
         } else {
             holder.cardChapter.setCardBackgroundColor(ContextCompat.getColor(holder.itemView.getContext(), android.R.color.white));
         }
-        // Xử lý sự kiện click vào chương (nếu cần)
+
         holder.itemView.setOnClickListener(v -> {
             if (onChapterClickListener != null) {
-                onChapterClickListener.onChapterClick(chapter.getId(), chapterList); // Assuming Chapter has getId()
+                onChapterClickListener.onChapterClick(chapter.getId(), chapterList);
             }
         });
     }

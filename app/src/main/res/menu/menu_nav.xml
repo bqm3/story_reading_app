@@ -7,6 +7,10 @@
             android:title="@string/home" />
 
         <item
+            android:id="@+id/nav_like"
+            android:title="@string/like" />
+
+        <item
             android:id="@+id/nav_logo_out"
             android:icon="@drawable/ic_log_out_2"
             android:title="@string/logout" />

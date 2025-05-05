@@ -117,6 +117,10 @@ public class AdminActivity extends AppCompatActivity {
 
         if (id == R.id.nav_add_story) {
             startActivity(new Intent(this, AddStoryActivity.class));
+        }
+        else if (id == R.id.nav_add_cate) {
+            startActivity(new Intent(this, AddCateActivity.class));
+
         } else if (id == R.id.nav_logout) {
             SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
             prefs.edit().clear().apply();

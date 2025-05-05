@@ -13,6 +13,10 @@
     <color name="secondary_text_color">#757575</color>
     <color name="button_color">#FF5722</color>
     <color name="light_green">#DFFFD6</color>
-
+    <color name="yellow">#FFF176</color>
     <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorLiked">#FF4081</color> <!-- Pink for example -->
+
+    <!-- Default button color -->
+    <color name="colorDefault">#6200EE</color> <!-- Purple for example -->
 </resources>

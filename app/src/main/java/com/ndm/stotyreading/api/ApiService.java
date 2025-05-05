@@ -3,11 +3,14 @@ package com.ndm.stotyreading.api;
 
 import com.ndm.stotyreading.enitities.detailChapter.ChapterContentResponse;
 import com.ndm.stotyreading.enitities.story.Category;
+import com.ndm.stotyreading.enitities.story.CategoryRequest;
 import com.ndm.stotyreading.enitities.story.Chapter;
 import com.ndm.stotyreading.enitities.story.ChapterDetailResponse;
 import com.ndm.stotyreading.enitities.story.ChapterImage;
 import com.ndm.stotyreading.enitities.story.CommentRequest;
 import com.ndm.stotyreading.enitities.story.CommentResponse;
+import com.ndm.stotyreading.enitities.story.FavoriteRequest;
+import com.ndm.stotyreading.enitities.story.FavoriteResponse;
 import com.ndm.stotyreading.enitities.user.RegisterRequest;
 import com.ndm.stotyreading.enitities.story.Story;
 import com.ndm.stotyreading.enitities.story.StoryChapterRespone;
@@ -55,6 +58,12 @@ public interface ApiService {
             @Path("storyId") String storyId
     );
 
+    @GET("common/stories/category/{categoryId}")
+    Call<StoryResponse> getStoriesByCategory(
+            @Path("categoryId") String categoryId
+    );
+
+
     @GET("common/chapter/{chapterId}")
     Call<ChapterContentResponse> getChapterContent(
             @Header("Authorization") String token,
@@ -74,6 +83,15 @@ public interface ApiService {
             @Path("chapterId") String chapterId
     );
 
+    @POST("common/toggle-favorite")
+    Call<FavoriteResponse> toggleChapterFavorite(
+            @Header("Authorization") String token,
+            @Body FavoriteRequest request
+    );
+
+    @GET("common/stories/favorite_stories")
+    Call<StoryResponse> getFavoriteStories(@Header("Authorization") String authHeader);
+
     @GET("common/chapter/{chapterId}/comments")
     Call<CommentResponse> getChapterComments(
             @Header("Authorization") String token,
@@ -90,6 +108,9 @@ public interface ApiService {
             @Part("status") RequestBody status,
             @Part MultipartBody.Part cover_image
     );
+
+    @POST("categories")
+    Call<Category> addCate(@Body CategoryRequest request);
 
     @GET("categories")
     Call<List<Category>> getCategories();

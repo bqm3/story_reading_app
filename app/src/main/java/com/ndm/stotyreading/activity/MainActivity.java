@@ -6,9 +6,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
+import android.view.SubMenu;
 import android.view.View;
-import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
@@ -17,12 +18,10 @@ import android.widget.ImageView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
 
-import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.graphics.Insets;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -33,10 +32,13 @@ import com.ndm.stotyreading.R;
 import com.ndm.stotyreading.adapter.StoryAdapter;
 import com.ndm.stotyreading.api.ApiService;
 import com.ndm.stotyreading.api.RetrofitClient;
+import com.ndm.stotyreading.enitities.story.Category;
 import com.ndm.stotyreading.enitities.story.Story;
+import com.ndm.stotyreading.enitities.story.StoryBasic;
 import com.ndm.stotyreading.enitities.story.StoryResponse;
 
-
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -50,12 +52,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private NavigationView navigationView;
     private DrawerLayout mDrawerLayout;
     private Toolbar toolbar;
-    private ProgressDialog progressDialog;
-    private RecyclerView rcv_list_item;
+    private RecyclerView rcvListItem;
     private EditText edtSearch;
     private Button btnSearch;
-    private ImageView imgsearch;
-    private FrameLayout framegiohang;
+    private ImageView imgSearch;
+    private FrameLayout frameGioHang;
 
     private StoryAdapter storyAdapter;
     private List<Story> fullStoryList = new ArrayList<>();
@@ -65,14 +66,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         initUI();
-        setSupportActionBar(toolbar);
 
+        setSupportActionBar(toolbar);
         setupDrawer();
         setupViewFlipper();
         setupListeners();
+
         fetchStoriesFromApi();
+        loadCategories();
     }
 
     private void initUI() {
@@ -82,14 +84,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         viewFlipper = findViewById(R.id.viewlipper);
         navigationView = findViewById(R.id.navigation_view);
         mDrawerLayout = findViewById(R.id.main);
-        rcv_list_item = findViewById(R.id.rcv_list_item);
-        imgsearch = findViewById(R.id.imgsearch);
-        framegiohang = findViewById(R.id.framegiohang);
-        progressDialog = new ProgressDialog(this);
+        rcvListItem = findViewById(R.id.rcv_list_item);
+        imgSearch = findViewById(R.id.imgsearch);
+        frameGioHang = findViewById(R.id.framegiohang);
 
-        rcv_list_item.setLayoutManager(new LinearLayoutManager(this));
+        rcvListItem.setLayoutManager(new LinearLayoutManager(this));
         storyAdapter = new StoryAdapter(this, filteredList);
-        rcv_list_item.setAdapter(storyAdapter);
+        rcvListItem.setAdapter(storyAdapter);
     }
 
     private void setupDrawer() {
@@ -121,17 +122,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void setupListeners() {
-        imgsearch.setOnClickListener(v -> {
-            // mở hoạt động tìm kiếm
-            // startActivity(new Intent(this, SearchActivity.class));
-        });
-
-        framegiohang.setOnClickListener(v -> {
-            // mở hoạt động giỏ hàng
-            // startActivity(new Intent(this, CartActivity.class));
-        });
-
+        imgSearch.setOnClickListener(v -> performSearch());
         btnSearch.setOnClickListener(v -> performSearch());
+        frameGioHang.setOnClickListener(v -> {
+            Toast.makeText(this, "Chức năng giỏ hàng chưa được triển khai", Toast.LENGTH_SHORT).show();
+        });
     }
 
     private void performSearch() {
@@ -152,13 +147,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void fetchStoriesFromApi() {
-        SharedPreferences prefs = getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
-        String token = prefs.getString("token", null);
+        String token = getToken();
+
+        if (token == null) {
+            Toast.makeText(this, "Vui lòng đăng nhập lại", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         ApiService apiService = RetrofitClient.getClient().create(ApiService.class);
-        Call<StoryResponse> call = apiService.getStories("Bearer " + token);
-
-        call.enqueue(new Callback<StoryResponse>() {
+        apiService.getStories("Bearer " + token).enqueue(new Callback<StoryResponse>() {
             @Override
             public void onResponse(@NonNull Call<StoryResponse> call, @NonNull Response<StoryResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
@@ -167,7 +164,98 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     filteredList.addAll(fullStoryList);
                     storyAdapter.notifyDataSetChanged();
                 } else {
-                    Toast.makeText(MainActivity.this, "Lỗi lấy dữ liệu", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Không thể tải danh sách truyện", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<StoryResponse> call, @NonNull Throwable t) {
+                Log.e("API Error", "Lỗi kết nối: " + t.getMessage());
+                Toast.makeText(MainActivity.this, "Không thể kết nối đến server", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void loadCategories() {
+        ApiService apiService = RetrofitClient.getClient().create(ApiService.class);
+        apiService.getCategories().enqueue(new Callback<List<Category>>() {
+            @Override
+            public void onResponse(Call<List<Category>> call, Response<List<Category>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    addCategoriesToMenu(response.body());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Category>> call, Throwable t) {
+                Log.e("API_ERROR", "Lỗi khi tải danh mục: " + t.getMessage());
+            }
+        });
+    }
+
+    private void addCategoriesToMenu(List<Category> categories) {
+        Menu menu = navigationView.getMenu();
+        SubMenu categorySubMenu = menu.addSubMenu("Thể loại truyện");
+
+        for (Category category : categories) {
+            categorySubMenu.add(category.getName()).setOnMenuItemClickListener(menuItem -> {
+                openCategoryStories(category.getId(), category.getName());
+                return true;
+            });
+        }
+
+        navigationView.invalidate();
+    }
+
+    private void openCategoryStories(String categoryId, String categoryName) {
+        if (categoryId == null || categoryName == null) {
+            Toast.makeText(this, "Dữ liệu thể loại không hợp lệ", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        ApiService apiService = RetrofitClient.getClient().create(ApiService.class);
+        Call<StoryResponse> call = apiService.getStoriesByCategory(categoryId);
+
+        call.enqueue(new Callback<StoryResponse>() {
+            @Override
+            public void onResponse(Call<StoryResponse> call, Response<StoryResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    fullStoryList = response.body().getData();
+                    filteredList.clear();
+                    filteredList.addAll(fullStoryList);
+                    storyAdapter.notifyDataSetChanged();
+                } else {
+                    Toast.makeText(MainActivity.this, "Không thể tải danh sách truyện", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<StoryResponse> call, Throwable t) {
+                Log.e("API_ERROR", "Lỗi khi tải danh sách truyện: " + t.getMessage());
+                Toast.makeText(MainActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void fetchFavoriteStories() {
+        String token = getToken();
+
+        if (token == null) {
+            Toast.makeText(this, "Bạn chưa đăng nhập", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        ApiService apiService = RetrofitClient.getClient().create(ApiService.class);
+        apiService.getFavoriteStories("Bearer " + token).enqueue(new Callback<StoryResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<StoryResponse> call, @NonNull Response<StoryResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    filteredList.clear();
+                    filteredList.addAll(response.body().getData());
+                    storyAdapter.notifyDataSetChanged();
+                    Toast.makeText(MainActivity.this, "Đã tải danh sách yêu thích", Toast.LENGTH_SHORT).show();
+                } else {
+                    handleErrorResponse(response);
                 }
             }
 
@@ -179,6 +267,23 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
     }
 
+    private void handleErrorResponse(Response<?> response) {
+        try {
+            if (response.errorBody() != null) {
+                String error = response.errorBody().string();
+                Log.e("API Error", "Chi tiết lỗi: " + error);
+            }
+        } catch (IOException e) {
+            Log.e("ErrorBody", "Lỗi khi đọc error body", e);
+        }
+        Toast.makeText(this, "Không thể lấy dữ liệu", Toast.LENGTH_SHORT).show();
+    }
+
+    private String getToken() {
+        SharedPreferences prefs = getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
+        return prefs.getString("token", null);
+    }
+
     private void clearToken() {
         SharedPreferences prefs = getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
         prefs.edit().remove("token").apply();
@@ -187,12 +292,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
-
         if (id == R.id.nav_home) {
             startActivity(new Intent(this, MainActivity.class));
             finish();
+        } else if (id == R.id.nav_like) {
+            fetchFavoriteStories(); // Gọi API để lấy truyện yêu thích
         } else if (id == R.id.nav_logo_out) {
             clearToken();
+            Toast.makeText(this, "Đăng xuất thành công", Toast.LENGTH_SHORT).show();
             startActivity(new Intent(this, LoginActivity.class));
             finish();
         }
@@ -201,9 +308,3 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return true;
     }
 }
-
-
-
-
-
-

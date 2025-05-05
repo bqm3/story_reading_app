@@ -35,6 +35,9 @@
             android:name=".activity.AddStoryActivity"
             android:exported="false" />
         <activity
+            android:name=".activity.AddCateActivity"
+            android:exported="false" />
+        <activity
             android:name=".activity.EditStoryActivity"
             android:exported="false" />
         <activity

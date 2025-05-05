@@ -68,7 +68,8 @@ public class StoryAdapter extends RecyclerView.Adapter<StoryAdapter.StoryViewHol
                         story.getDescription(),
                         story.getCoverImage(),
                         story.getStatus(),
-                        story.getChapters()
+                        story.getChapters(),
+                        story.isLiked()
                 );
 
                 intent.putExtra("story_basic", storyBasic);

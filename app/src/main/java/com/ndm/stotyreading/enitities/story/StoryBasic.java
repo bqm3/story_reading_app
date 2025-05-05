@@ -14,11 +14,12 @@ public class StoryBasic implements Parcelable {
     private String description;
     private String cover_image;
     private String status;
+    private boolean isLiked;
     private List<Chapter> chapters;
 
     // Constructor
     public StoryBasic(String id, String title, String author, String genre_id,
-                      String description, String cover_image, String status, List<Chapter> chapters) {
+                      String description, String cover_image, String status, List<Chapter> chapters, Boolean isLiked) {
         this.id = id;
         this.title = title;
         this.author = author;
@@ -27,12 +28,20 @@ public class StoryBasic implements Parcelable {
         this.cover_image = cover_image;
         this.status = status;
         this.chapters = chapters;
+        this.isLiked = isLiked;
     }
 
     public StoryBasic() {
 
     }
 
+    public boolean isLiked() {
+        return isLiked;
+    }
+
+    public void setLiked(boolean liked) {
+        isLiked = liked;
+    }
 
     // Getters...
     public String getId() { return id; }

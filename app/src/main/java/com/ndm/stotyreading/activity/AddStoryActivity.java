@@ -155,13 +155,13 @@ public class AddStoryActivity extends AppCompatActivity {
 
                         // Set default selection and update selectedCategoryId
                         spnCategory.setSelection(0); // Select first item by default
-                        selectedCategoryId = categories.get(0).getId(); // Set default category ID
+                        selectedCategoryId = String.valueOf(categories.get(0).getId()); // Set default category ID
 
                         // Handle category selection
                         spnCategory.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                             @Override
                             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                                selectedCategoryId = categories.get(position).getId();
+                                selectedCategoryId = String.valueOf(categories.get(position).getId());
                                 Log.d("CategorySelection", "Selected Category ID: " + selectedCategoryId); // Debug log
                             }
 
