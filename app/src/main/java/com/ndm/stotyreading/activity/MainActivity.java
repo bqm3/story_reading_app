@@ -61,6 +61,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private List<Story> fullStoryList = new ArrayList<>();
     private List<Story> filteredList = new ArrayList<>();
 
+    // Thêm danh sách categories để lưu trữ
+    private List<Category> categoryList = new ArrayList<>();
+    private boolean isCategoryExpanded = false;
+    private static final int CATEGORY_GROUP_ID = 1000;
+    private static final int CATEGORY_PARENT_ID = 999;
+    private static final String CATEGORY_PARENT_TITLE = "Thể loại truyện";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -179,7 +186,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             @Override
             public void onResponse(Call<List<Category>> call, Response<List<Category>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    addCategoriesToMenu(response.body());
+                    categoryList = response.body(); // Lưu danh sách categories
+                    setupCategoryMenu(); // Cài đặt menu thể loại
                 }
             }
 
@@ -190,18 +198,57 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
     }
 
-    private void addCategoriesToMenu(List<Category> categories) {
+    private void setupCategoryMenu() {
+        // Xóa menu cũ nếu đã tồn tại
         Menu menu = navigationView.getMenu();
-        SubMenu categorySubMenu = menu.addSubMenu("Thể loại truyện");
+        MenuItem existingItem = menu.findItem(CATEGORY_PARENT_ID);
+        if (existingItem != null) {
+            menu.removeItem(CATEGORY_PARENT_ID);
+        }
 
-        for (Category category : categories) {
-            categorySubMenu.add(category.getName()).setOnMenuItemClickListener(menuItem -> {
+        // Tạo menu cha mới
+        MenuItem categoryItem = menu.add(Menu.NONE, CATEGORY_PARENT_ID, 2, CATEGORY_PARENT_TITLE);
+
+        // Tạo submenu để chứa các thể loại
+        SubMenu subMenu = categoryItem.getSubMenu();
+        if (subMenu == null) {
+            subMenu = menu.addSubMenu(Menu.NONE, CATEGORY_PARENT_ID, 2, CATEGORY_PARENT_TITLE);
+        }
+
+        // Thêm các thể loại vào submenu
+        for (Category category : categoryList) {
+            MenuItem item = subMenu.add(CATEGORY_GROUP_ID, Menu.NONE, Menu.NONE, "• " + category.getName());
+            item.setOnMenuItemClickListener(menuItem -> {
                 openCategoryStories(category.getId(), category.getName());
+                mDrawerLayout.closeDrawer(GravityCompat.START);
                 return true;
             });
         }
 
-        navigationView.invalidate();
+        // Xử lý sự kiện khi nhấn vào menu cha
+        categoryItem.setOnMenuItemClickListener(item -> {
+            isCategoryExpanded = !isCategoryExpanded;
+            toggleCategoryVisibility();
+            return true;
+        });
+
+        // Khởi tạo ban đầu (ẩn các mục thể loại)
+        toggleCategoryVisibility();
+    }
+
+    private void toggleCategoryVisibility() {
+        Menu menu = navigationView.getMenu();
+        for (int i = 0; i < menu.size(); i++) {
+            MenuItem item = menu.getItem(i);
+            if (item.getItemId() == CATEGORY_PARENT_ID) {
+                SubMenu subMenu = item.getSubMenu();
+                if (subMenu != null) {
+                    for (int j = 0; j < subMenu.size(); j++) {
+                        subMenu.getItem(j).setVisible(isCategoryExpanded);
+                    }
+                }
+            }
+        }
     }
 
     private void openCategoryStories(String categoryId, String categoryName) {
@@ -221,6 +268,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     filteredList.clear();
                     filteredList.addAll(fullStoryList);
                     storyAdapter.notifyDataSetChanged();
+
+                    // Hiển thị tiêu đề thể loại
+                    getSupportActionBar().setTitle("Thể loại: " + categoryName);
                 } else {
                     Toast.makeText(MainActivity.this, "Không thể tải danh sách truyện", Toast.LENGTH_SHORT).show();
                 }
@@ -251,6 +301,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     filteredList.addAll(response.body().getData());
                     storyAdapter.notifyDataSetChanged();
                     Toast.makeText(MainActivity.this, "Đã tải danh sách yêu thích", Toast.LENGTH_SHORT).show();
+
+                    // Cập nhật tiêu đề
+                    getSupportActionBar().setTitle("Truyện yêu thích");
                 } else {
                     handleErrorResponse(response);
                 }
@@ -290,8 +343,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.nav_home) {
-            startActivity(new Intent(this, MainActivity.class));
-            finish();
+            // Tải lại trang chính
+            fetchStoriesFromApi();
+            getSupportActionBar().setTitle(R.string.app_name); // Đặt lại tiêu đề
         } else if (id == R.id.nav_like) {
             fetchFavoriteStories(); // Gọi API để lấy truyện yêu thích
         } else if (id == R.id.nav_logo_out) {
@@ -299,6 +353,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             Toast.makeText(this, "Đăng xuất thành công", Toast.LENGTH_SHORT).show();
             startActivity(new Intent(this, LoginActivity.class));
             finish();
+        } else if (id == CATEGORY_PARENT_ID) {
+            // Xử lý khi nhấn vào "Thể loại truyện"
+            isCategoryExpanded = !isCategoryExpanded;
+            toggleCategoryVisibility();
+            return true; // Đã xử lý sự kiện, không đóng drawer
         }
 
         mDrawerLayout.closeDrawer(GravityCompat.START);
